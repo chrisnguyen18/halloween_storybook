@@ -34,6 +34,15 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _treats = 0;
 
+  void _showBoo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => const AlertDialog(
+        content: Text('Boo! Got you!', textAlign: TextAlign.center),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,8 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: FloatyEmoji('🎃', size: 42, durationMs: 3200, onTap: () => setState(() => _treats += 1)),
                   ),
 
-                  Positioned.fill(child: FloatyEmoji('👻', size: 46, durationMs: 3100)),
-                  Positioned.fill(child: FloatyEmoji('👻', size: 42, durationMs: 3000)),
+                  Positioned.fill(child: FloatyEmoji('👻', size: 46, durationMs: 3100, onTap: () => _showBoo(context))),
+                  Positioned.fill(child: FloatyEmoji('👻', size: 42, durationMs: 3000, onTap: () => _showBoo(context))),
+                  Positioned.fill(child: FloatyEmoji('👻', size: 49, durationMs: 3100, onTap: () => _showBoo(context))),
                 ],
               ),
             ),
