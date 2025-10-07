@@ -1,10 +1,12 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -34,13 +36,51 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _treats = 0;
 
+  late final AudioPlayer _bgPlayer;
+  late final AudioPlayer _fxPlayer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _bgPlayer = AudioPlayer(playerId: 'bg');
+    _fxPlayer = AudioPlayer(playerId: 'fx');
+
+    _playBackgroundMusic();
+  }
+
+  Future<void> _playBackgroundMusic() async {
+    // Set looping mode first
+    await _bgPlayer.setReleaseMode(ReleaseMode.loop);
+    // Play the asset
+    await _bgPlayer.setSource(AssetSource('sounds/background.mp3'));
+    await _bgPlayer.resume(); // ensures playback starts
+  }
+
   void _showBoo(BuildContext context) {
+    _fxPlayer.play(AssetSource('sounds/jumpscare.wav'));
     showDialog(
       context: context,
       builder: (_) => const AlertDialog(
         content: Text('Boo! Got you!', textAlign: TextAlign.center),
       ),
     );
+  }
+
+  void _playSuccess() {
+    _fxPlayer.play(AssetSource('sounds/success.wav'));
+  }
+
+  void collectTreat() {
+    setState(() => _treats += 1);
+    _playSuccess();
+  }
+
+  @override
+  void dispose() {
+    _bgPlayer.dispose();
+    _fxPlayer.dispose();
+    super.dispose();
   }
 
   @override
@@ -73,32 +113,15 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: Stack(
-                children: [
-                  // Floating emojis
-                  Positioned.fill(
-                    child: FloatyEmoji(
-                      '🎃',
-                      size: 50,
-                      durationMs: 3000,
-                      onTap: () => setState(() => _treats += 1),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: FloatyEmoji('🎃', size: 50, durationMs: 3300, onTap: () => setState(() => _treats += 1)),
-                  ),
-                  Positioned.fill(
-                    child: FloatyEmoji('🎃', size: 46, durationMs: 3400, onTap: () => setState(() => _treats += 1)),
-                  ),
-                  Positioned.fill(
-                    child: FloatyEmoji('🎃', size: 42, durationMs: 3200, onTap: () => setState(() => _treats += 1)),
-                  ),
-
-                  Positioned.fill(child: FloatyEmoji('👻', size: 46, durationMs: 3100, onTap: () => _showBoo(context))),
-                  Positioned.fill(child: FloatyEmoji('👻', size: 42, durationMs: 3000, onTap: () => _showBoo(context))),
-                  Positioned.fill(child: FloatyEmoji('👻', size: 49, durationMs: 3100, onTap: () => _showBoo(context))),
-                ],
-              ),
+              child: Stack(children: [
+                Positioned.fill(child: FloatyEmoji('🎃', size: 50, durationMs: 3000, onTap: () { setState(() => _treats += 1); _playSuccess(); })),
+                Positioned.fill(child: FloatyEmoji('🎃', size: 50, durationMs: 3300, onTap: () { setState(() => _treats += 1); _playSuccess(); })),
+                Positioned.fill(child: FloatyEmoji('🎃', size: 46, durationMs: 3400, onTap: () { setState(() => _treats += 1); _playSuccess(); })),
+                Positioned.fill(child: FloatyEmoji('🎃', size: 42, durationMs: 3200, onTap: () { setState(() => _treats += 1); _playSuccess(); })),
+                Positioned.fill(child: FloatyEmoji('👻', size: 46, durationMs: 3100, onTap: () => _showBoo(context))),
+                Positioned.fill(child: FloatyEmoji('👻', size: 42, durationMs: 3000, onTap: () => _showBoo(context))),
+                Positioned.fill(child: FloatyEmoji('👻', size: 49, durationMs: 3100, onTap: () => _showBoo(context))),
+              ]),
             ),
             const SizedBox(height: 10),
           ],
@@ -139,9 +162,7 @@ class _FloatyEmojiState extends State<FloatyEmoji> {
   @override
   void initState() {
     super.initState();
-    // Start somewhere random, then immediately move to a new target:
     _target = _randAlign();
-    // Picks a new target on first frame for variety.
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() => _target = _randAlign()));
   }
 
